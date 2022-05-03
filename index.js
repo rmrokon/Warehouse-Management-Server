@@ -64,6 +64,16 @@ async function run() {
 
         })
 
+        // Add New Product API
+
+        app.post('/addnewproduct', async (req, res) => {
+            const { name, quantity, price, supplier, img, description } = req.body;
+            const product = { name, quantity, price, supplier, img, description };
+            const addProduct = await productCollection.insertOne(product);
+
+            res.send(addProduct);
+        })
+
         // Delete Product API
         app.delete('/deleteProduct/:id', async (req, res) => {
             const id = req.params.id;
