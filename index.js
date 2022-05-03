@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { listen } = require('express/lib/application');
 
 require('dotenv').config();
@@ -24,11 +24,54 @@ async function run() {
         await client.connect();
         const productCollection = client.db('inventory').collection('products');
 
+        // Get all products API
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
+        })
+
+        // Get Product by id API
+
+        app.get('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await productCollection.findOne(query);
+            res.send(product);
+        })
+
+        // Update Product API
+
+        app.put('/updateProduct/:id', async (req, res) => {
+            const updatedProduct = req.body;
+            // const updatedQuantity = req.body;
+            console.log(updatedProduct);
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true };
+
+            const updateProduct = {
+                $set: {
+                    quantity: updatedProduct.currentQuantity
+                },
+            };
+
+            const result = await productCollection.updateOne(query, updateProduct, options);
+            console.log(result);
+
+            res.send(result);
+
+        })
+
+        // Delete Product API
+        app.delete('/deleteProduct/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const deleteProduct = await productCollection.deleteOne(query);
+            if (deleteProduct.deletedCount === 1) {
+                console.log("Product Deleted")
+            }
         })
     }
     finally {
