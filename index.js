@@ -68,8 +68,8 @@ async function run() {
         // Add New Product API
 
         app.post('/addnewproduct', async (req, res) => {
-            const { name, quantity, price, supplier, img, description } = req.body;
-            const product = { name, quantity, price, supplier, img, description };
+            const { name, email, quantity, price, supplier, img, description } = req.body;
+            const product = { name, email, quantity, price, supplier, img, description };
             const addProduct = await productCollection.insertOne(product);
 
             res.send(addProduct);
@@ -100,6 +100,16 @@ async function run() {
             const cursor = orderCollection.find(query);
             const orders = await cursor.toArray();
             res.send(orders);
+        })
+
+        // Get Products by email API
+
+        app.get('/getProductsByEmail', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const cursor = productCollection.find(query);
+            const productsByEmail = await cursor.toArray();
+            res.send(productsByEmail)
         })
     }
     finally {
