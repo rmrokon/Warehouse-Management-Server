@@ -23,6 +23,7 @@ async function run() {
     try {
         await client.connect();
         const productCollection = client.db('inventory').collection('products');
+        const orderCollection = client.db('orders').collection('order');
 
         // Get all products API
         app.get('/products', async (req, res) => {
@@ -82,6 +83,23 @@ async function run() {
             if (deleteProduct.deletedCount === 1) {
                 console.log("Product Deleted")
             }
+        })
+
+        // Add order API
+        app.post('/addorder', async (req, res) => {
+            const { clientName, productName, quantity } = req.body;
+            const newOrder = { clientName, productName, quantity };
+            const addOrder = await orderCollection.insertOne(newOrder);
+            res.send(addOrder);
+
+        })
+
+        // Get Orders API
+        app.get('/orders', async (req, res) => {
+            const query = {};
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
         })
     }
     finally {
