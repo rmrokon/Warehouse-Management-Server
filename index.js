@@ -111,6 +111,16 @@ async function run() {
             const productsByEmail = await cursor.toArray();
             res.send(productsByEmail)
         })
+
+        // Get Order by ID
+        app.delete('/deleteOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const deleteOrder = await orderCollection.deleteOne(query);
+            if (deleteOrder.deletedCount === 1) {
+                console.log("Product Deleted")
+            }
+        })
     }
     finally {
 
