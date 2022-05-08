@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { listen } = require('express/lib/application');
 
@@ -11,6 +12,14 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.send(401).send({ message: "Unauthorized Access" });
+    }
+    next();
+}
 
 
 // Connecting Mongo
@@ -25,6 +34,14 @@ async function run() {
         const productCollection = client.db('inventory').collection('products');
         const orderCollection = client.db('orders').collection('order');
 
+        // AUTH
+        app.post('/login', async (req, res) => {
+            const user = req.body;
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '30d'
+            });
+            res.send({ accessToken });
+        })
         // Get all products API
         app.get('/products', async (req, res) => {
             const query = {};
@@ -104,7 +121,8 @@ async function run() {
 
         // Get Products by email API
 
-        app.get('/getProductsByEmail', async (req, res) => {
+        app.get('/getProductsByEmail', verifyJWT, async (req, res) => {
+
             const email = req.query.email;
             const query = { email: email }
             const cursor = productCollection.find(query);
